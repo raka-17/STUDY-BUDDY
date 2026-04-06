@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#08090e"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="CSE 2027"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='90' fill='%230f1035'/%3E%3Crect x='130' y='120' width='252' height='300' rx='14' fill='%23312e81'/%3E%3Crect x='130' y='120' width='126' height='300' rx='14' fill='%233730a3'/%3E%3Crect x='248' y='120' width='18' height='300' fill='%236366f1'/%3E%3Ctext x='256' y='400' font-size='78' font-weight='900' text-anchor='middle' font-family='Arial Black%2C Arial%2C sans-serif' fill='%23a5b4fc'%3EIAS%3C/text%3E%3C/svg%3E"/>
+<title>CSE 2027 — UPSC Planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@400;600;700;900&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',system-ui,sans-serif;background:#08090e;color:#e8eaf0;min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+button,input{font-family:inherit}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:#2a2d45;border-radius:99px}
+
+/* HEADER */
+#hdr{background:linear-gradient(135deg,#0d0f1a,#111827 60%,#1a1035);border-bottom:1px solid #1e2235;padding:16px 14px 13px;position:sticky;top:0;z-index:100}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start}
+.app-title{font-size:18px;font-weight:900;letter-spacing:-.5px}
+.app-sub{font-size:10px;color:#6366f1;margin-top:2px;font-weight:600}
+.hdr-right{text-align:right}
+.hdr-day{font-size:11px;color:#4b5563}
+.hdr-date{font-size:11px;color:#9ca3af;margin-top:1px}
+#flash{font-size:11px;color:#4ade80;margin-top:2px;min-height:14px;transition:opacity .3s}
+.pbar-wrap{margin-top:11px}
+.pbar-labels{display:flex;justify-content:space-between;margin-bottom:5px;font-size:10px}
+.pbar-labels span:last-child{font-weight:700;color:#6366f1;font-size:11px}
+.pbar{height:5px;border-radius:99px;background:#1e2235;overflow:hidden}
+.pbar-fill{height:100%;border-radius:99px;transition:width .6s ease}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.stat-box{background:#0f1117;border:1px solid #1e2235;border-radius:10px;padding:8px;text-align:center}
+.stat-v{font-size:20px;font-weight:900}
+.stat-l{font-size:9px;color:#4b5563;margin-top:2px}
+
+/* BOTTOM NAV */
+#bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(8,9,14,.96);backdrop-filter:blur(12px);border-top:1px solid #1e2235;display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom,0px)}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 2px 6px;border:none;background:transparent;cursor:pointer;transition:.15s}
+.nb-dot{width:4px;height:4px;border-radius:50%;background:#6366f1;margin-bottom:3px;opacity:0;transition:.2s}
+.nb.on .nb-dot{opacity:1}
+.nb-ic{font-size:18px;transition:transform .2s}
+.nb.on .nb-ic{transform:translateY(-2px)}
+.nb-lbl{font-size:8px;font-weight:700;color:#4b5563;letter-spacing:.3px;transition:color .2s}
+.nb.on .nb-lbl{color:#a5b4fc}
+
+/* CONTENT */
+#content{padding:13px 13px 85px;max-width:680px;margin:0 auto}
+.panel{display:none;flex-direction:column;gap:11px}
+.panel.on{display:flex;animation:sup .22s ease}
+@keyframes sup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* COMPONENTS */
+.card{background:#0f1117;border:1px solid #1e2235;border-radius:13px;padding:13px 14px}
+.card-title{font-size:10px;font-weight:700;color:#4b5563;letter-spacing:.8px;text-transform:uppercase;margin-bottom:9px}
+.badge{padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block}
+.tag{padding:1px 5px;border-radius:5px;font-size:9px;font-weight:700;display:inline-block;border:1px solid}
+.cbtn{color:#fff;border:none;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+.cbtn:active{opacity:.8}
+.inp{width:100%;background:#0a0b12;border:1px solid #1e2235;border-radius:9px;padding:9px 11px;font-size:12px;color:#e8eaf0;outline:none;transition:border-color .2s}
+.inp:focus{border-color:#6366f1}
+.inp::placeholder{color:#4b5563}
+
+/* TODAY */
+.mentor-card{background:linear-gradient(135deg,#0f1035,#1a1060);border:1px solid #2e2f7a;border-radius:13px;padding:13px 14px}
+.rev-overdue{background:#130a0a;border:1px solid #7f1d1d;border-radius:13px;padding:13px}
+.rev-today{border-radius:13px;padding:13px}
+.next-card{background:#090f0e;border:1px solid #064e3b;border-radius:13px;padding:13px}
+.oi{background:#1f0a0a;border:1px solid #991b1b;border-radius:9px;padding:9px 11px;display:flex;justify-content:space-between;align-items:center;gap:7px;margin-bottom:6px}
+.ti{background:#1f1200;border:1px solid #92400e;border-radius:9px;padding:9px 11px;display:flex;justify-content:space-between;align-items:center;gap:7px;margin-bottom:6px}
+.ni{background:#052e1c;border:1px solid #065f46;border-radius:9px;padding:9px 11px;display:flex;justify-content:space-between;align-items:center;gap:7px;margin-bottom:6px}
+.ri{border-radius:11px;padding:10px 12px;display:flex;gap:8px;align-items:center;margin-bottom:6px;border:1px solid}
+.item-info{flex:1;min-width:0}
+.item-name{font-size:11px;font-weight:700;color:#e8eaf0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center}
+.week-row{display:flex;justify-content:space-between;align-items:center;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid #1e2235}
+
+/* TOPICS */
+.search-wrap{position:relative}
+.s-clear{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;color:#4b5563;cursor:pointer;font-size:16px;display:none}
+.subj-card{border-radius:13px;overflow:hidden;margin-bottom:8px;border:1px solid #1e2235;transition:border-color .2s}
+.subj-hdr{width:100%;border:none;padding:12px 14px;cursor:pointer;text-align:left;background:#0f1117;transition:background .2s}
+.topic-row{display:flex;align-items:flex-start;gap:11px;padding:10px 14px;border-top:1px solid #0f1117}
+.topic-cb{width:18px;height:18px;border-radius:4px;border:2px solid #374151;background:transparent;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.topic-name{font-size:11px;line-height:1.55;color:#d1d5db}
+
+/* REVISIONS */
+.rev-legend{display:flex;gap:8px;flex-wrap:wrap}
+.rev-leg-item{display:flex;align-items:center;gap:4px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.rf-wrap{display:flex;gap:7px;flex-wrap:wrap}
+.rf-btn{padding:5px 10px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
+
+/* PROGRESS */
+.bigpct{background:linear-gradient(135deg,#0f1035,#1a1060);border:1px solid #312e81;border-radius:13px;padding:18px;text-align:center}
+.bigpct-num{font-size:48px;font-weight:900;color:#a5b4fc;line-height:1;font-family:'Space Mono',monospace}
+
+/* PHASES */
+.plan-banner{background:linear-gradient(135deg,#0f1035,#0f2030);border:1px solid #1e3a5f;border-radius:13px;padding:14px}
+.plan-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.plan-dot{width:9px;height:9px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.phase-card{border-radius:13px;overflow:hidden;margin-bottom:10px}
+.phase-hdr{padding:13px 14px}
+.phase-body{background:#08090e;padding:11px 13px}
+.phase-sr{display:flex;align-items:center;gap:9px;padding-bottom:7px;margin-bottom:7px;border-bottom:1px solid #0f1117}
+.phase-er{display:flex;gap:7px;padding-bottom:5px;align-items:flex-start}
+
+/* TOOLS */
+.tools-wrap{display:flex;flex-direction:column;gap:11px}
+.tool-card{background:#0f1117;border:1px solid #1e2235;border-radius:13px;padding:14px}
+.tool-title{font-size:13px;font-weight:700;color:#e8eaf0;margin-bottom:11px;display:flex;align-items:center;gap:7px}
+
+/* TIMER */
+.timer-presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;justify-content:center}
+.tp-btn{padding:4px 9px;border-radius:6px;border:1px solid #2a2d45;background:#0a0b12;color:#9ca3af;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s}
+.tp-btn:hover,.tp-btn.on{border-color:#6366f1;color:#6366f1;background:rgba(99,102,241,.1)}
+.timer-ring-wrap{position:relative;display:flex;align-items:center;justify-content:center;margin:4px 0}
+#timer-ring{transform:rotate(-90deg)}
+#t-fill{transition:stroke-dashoffset 1s linear}
+.timer-center{position:absolute;text-align:center}
+#timer-disp{font-family:'Space Mono',monospace;font-size:36px;font-weight:700;color:#6366f1;letter-spacing:2px}
+.timer-mode{font-size:9px;font-weight:700;color:#4b5563;text-align:center;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+.timer-controls{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:9px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.t-pulse{animation:pulse 2s ease infinite}
+#pomo-count{text-align:center;margin-top:7px;font-size:10px;color:#4b5563}
+
+/* TASKS */
+.task-input-row{display:flex;gap:7px}
+.task-input-row .inp{flex:1}
+#task-list{list-style:none;margin-top:9px;display:flex;flex-direction:column;gap:5px}
+.task-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#0a0b12;border:1px solid #1e2235;border-radius:8px}
+.task-cb{width:17px;height:17px;border-radius:4px;border:2px solid #6366f1;background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.task-cb.done{background:#6366f1;border-color:#6366f1}
+.task-txt{flex:1;font-size:11px;color:#e8eaf0;min-width:0}
+.task-txt.done{text-decoration:line-through;color:#4b5563}
+.task-del{background:none;border:none;color:#4b5563;cursor:pointer;font-size:15px;flex-shrink:0;padding:0 2px}
+
+/* PYQ */
+.pyq-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.pyq-pill{padding:4px 9px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid;transition:all .2s;font-family:inherit}
+.pyq-box{background:#0a0b12;border:1px solid #2a2d45;border-radius:9px;padding:12px;font-size:12px;color:#e8eaf0;line-height:1.65;min-height:60px;margin-bottom:9px}
+.pyq-ans{background:#0a0b12;border:1px solid #2a2d45;border-radius:9px;padding:11px;font-size:11px;color:#9ca3af;line-height:1.65;margin-top:8px;display:none}
+.pyq-btns{display:flex;gap:7px}
+.pyq-btns .cbtn{flex:1;text-align:center}
+
+/* PDF */
+.pdf-placeholder{padding:28px;text-align:center;color:#4b5563;font-size:12px;border:1px dashed #2a2d45;border-radius:9px;margin-top:9px}
+#pdf-viewer{width:100%;height:300px;border:none;border-radius:9px;margin-top:9px;display:none;background:#fff}
+
+/* ANALYTICS */
+.a-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px}
+.a-stat{background:#0a0b12;border:1px solid #1e2235;border-radius:9px;padding:8px;text-align:center}
+.a-stat-v{font-size:18px;font-weight:900;font-family:'Space Mono',monospace}
+.a-stat-l{font-size:9px;color:#4b5563;margin-top:2px}
+#chart-wrap{position:relative;height:160px}
+
+/* INSTALL */
+#install-bar{background:linear-gradient(135deg,#0f2d0f,#1a3a1a);border:1px solid #166534;border-radius:11px;padding:11px 13px;display:none;align-items:center;gap:9px;margin-bottom:3px}
+#install-bar.on{display:flex}
+.ib-txt{flex:1;font-size:11px;color:#86efac}
+.ib-txt strong{display:block;font-size:12px;margin-bottom:2px}
+/* NOTIF BANNER */
+#notif-bar{background:linear-gradient(135deg,#0f1f35,#1a2a50);border:1px solid #1e3a5f;border-radius:11px;padding:11px 13px;display:none;align-items:center;gap:9px;margin-bottom:3px}
+#notif-bar.on{display:flex}
+.nb2-txt{flex:1;font-size:11px;color:#93c5fd}
+.nb2-txt strong{display:block;font-size:12px;margin-bottom:2px;color:#bfdbfe}
+/* REMINDER SETTINGS */
+#reminder-card{background:#0f1117;border:1px solid #1e2235;border-radius:13px;padding:13px 14px;display:none}
+#reminder-card.on{display:block}
+
+/* EMPTY */
+.empty{text-align:center;padding:36px 16px}
+.empty-ic{font-size:34px;margin-bottom:9px}
+.empty-t{font-size:13px;font-weight:700;color:#374151}
+.empty-s{font-size:11px;color:#2a2d45;margin-top:5px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="app-title">🎓 CSE 2027 Planner</div>
+      <div class="app-sub">Working Professional · DCSEM · Personal Mentor</div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-day" id="hdr-day"></div>
+      <div class="hdr-date" id="hdr-date"></div>
+      <div id="flash"></div>
+    </div>
+  </div>
+  <div class="pbar-wrap">
+    <div class="pbar-labels"><span>Overall Syllabus Progress</span><span id="hdr-prog-txt">0/0 · 0%</span></div>
+    <div class="pbar"><div class="pbar-fill" id="hdr-pbar" style="width:0%;background:linear-gradient(90deg,#6366f1,#8b5cf6)"></div></div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-v" id="s-done" style="color:#34d399">0</div><div class="stat-l">Topics Done</div></div>
+    <div class="stat-box"><div class="stat-v" id="s-due" style="color:#4b5563">0</div><div class="stat-l">Rev Due Today</div></div>
+    <div class="stat-box"><div class="stat-v" id="s-rdone" style="color:#6366f1">0</div><div class="stat-l">Rev Completed</div></div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+  <div id="install-bar">
+    <span style="font-size:20px">📲</span>
+    <div class="ib-txt"><strong>Install as App</strong>Add to Home Screen for offline use</div>
+    <button class="cbtn" style="background:#166534" id="ib-btn">Install</button>
+    <button style="background:none;border:none;color:#4b5563;cursor:pointer;font-size:16px;padding:0 2px" id="ib-close">×</button>
+  </div>
+
+  <div id="notif-bar">
+    <span style="font-size:20px">🔔</span>
+    <div class="nb2-txt"><strong>Enable Study Reminders</strong>Get notified when it's time to study</div>
+    <button class="cbtn" style="background:#1e3a8a" id="nb2-btn">Allow</button>
+    <button style="background:none;border:none;color:#4b5563;cursor:pointer;font-size:16px;padding:0 2px" id="nb2-close">×</button>
+  </div>
+
+  <!-- PANEL 0: TODAY -->
+  <div class="panel on" id="p0">
+    <div class="mentor-card">
+      <div id="mentor-lbl" style="font-size:9px;font-weight:700;color:#818cf8;margin-bottom:8px;letter-spacing:1px;text-transform:uppercase"></div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <span id="mentor-ic" style="font-size:20px;flex-shrink:0"></span>
+        <p id="mentor-tip" style="font-size:12px;color:#c7d2fe;line-height:1.65;margin:0"></p>
+      </div>
+    </div>
+    <div id="overdue-sec"></div>
+    <div id="today-sec"></div>
+    <div id="next-sec"></div>
+    <div id="week-sec"></div>
+  </div>
+
+  <!-- PANEL 1: TOPICS -->
+  <div class="panel" id="p1">
+    <div class="search-wrap">
+      <input class="inp" id="s-inp" placeholder="🔍  Search topics across all subjects…" oninput="renderTopics()"/>
+      <button class="s-clear" id="s-clear" onclick="clearSearch()">×</button>
+    </div>
+    <div id="search-res"></div>
+    <div id="subj-list"></div>
+  </div>
+
+  <!-- PANEL 2: REVISIONS -->
+  <div class="panel" id="p2">
+    <div class="card">
+      <div class="card-title">Spaced Repetition Schedule</div>
+      <div class="rev-legend" id="rev-legend"></div>
+    </div>
+    <div class="rf-wrap" id="rf-wrap"></div>
+    <div id="rev-list"></div>
+  </div>
+
+  <!-- PANEL 3: PROGRESS -->
+  <div class="panel" id="p3">
+    <div class="bigpct">
+      <div class="bigpct-num" id="big-pct">0%</div>
+      <div style="font-size:11px;color:#6366f1;margin-top:5px">Overall Syllabus Complete</div>
+      <div id="big-sub" style="font-size:10px;color:#4b5563;margin-top:3px"></div>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:#4b5563;letter-spacing:.8px;text-transform:uppercase;margin-top:2px">Subject-wise Progress</div>
+    <div id="subj-prog"></div>
+    <div style="text-align:center">
+      <button onclick="clearAll()" style="background:none;border:1px solid #7f1d1d;color:#ef4444;border-radius:8px;padding:7px 15px;font-size:10px;cursor:pointer;font-family:inherit">🗑 Reset All Progress</button>
+    </div>
+  </div>
+
+  <!-- PANEL 4: PHASES -->
+  <div class="panel" id="p4">
+    <div class="plan-banner">
+      <div style="font-size:11px;font-weight:700;color:#60a5fa;margin-bottom:11px;letter-spacing:.8px;text-transform:uppercase">Your Broad Plan — At a Glance</div>
+      <div id="plan-rows"></div>
+    </div>
+    <div id="phase-list"></div>
+  </div>
+
+  <!-- PANEL 5: TOOLS -->
+  <div class="panel" id="p5">
+
+    <!-- TIMER -->
+    <div class="tool-card">
+      <div class="tool-title">⏱ Pomodoro Timer</div>
+      <div class="timer-presets">
+        <button class="tp-btn on" onclick="setPreset(25,'FOCUS MODE',this)">25m Focus</button>
+        <button class="tp-btn" onclick="setPreset(5,'SHORT BREAK',this)">5m Break</button>
+        <button class="tp-btn" onclick="setPreset(15,'LONG BREAK',this)">15m Break</button>
+        <button class="tp-btn" onclick="setPreset(45,'DEEP WORK',this)">45m Deep</button>
+        <button class="tp-btn" onclick="setPreset(60,'MARATHON',this)">60m</button>
+      </div>
+      <div class="timer-mode" id="t-mode">FOCUS MODE</div>
+      <div class="timer-ring-wrap">
+        <svg id="timer-ring" width="130" height="130" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="56" fill="none" stroke="#1e2235" stroke-width="7"/>
+          <circle id="t-fill" cx="65" cy="65" r="56" fill="none" stroke="#6366f1" stroke-width="7"
+            stroke-dasharray="352" stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div class="timer-center"><div id="timer-disp">25:00</div></div>
+      </div>
+      <div class="timer-controls">
+        <input class="inp" id="t-inp" type="number" placeholder="Min" min="1" max="120" style="width:70px;text-align:center"/>
+        <button class="cbtn" id="t-start" style="background:#6366f1" onclick="startTimer()">▶ Start</button>
+        <button class="cbtn" id="t-pause" style="background:#374151;display:none" onclick="pauseTimer()">⏸ Pause</button>
+        <button class="cbtn" style="background:#374151" onclick="resetTimer()">↺ Reset</button>
+      </div>
+      <div id="pomo-count"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="tool-card">
+      <div class="tool-title">📋 Study Tasks</div>
+      <form id="task-form" onsubmit="addTask(event)" style="display:flex;gap:7px">
+        <input class="inp" id="t-task" placeholder="Type a task and press Add…" autocomplete="off" style="flex:1"/>
+        <button type="submit" class="cbtn" style="background:#6366f1">+ Add</button>
+      </form>
+      <ul id="task-list" style="list-style:none;margin-top:9px;display:flex;flex-direction:column;gap:5px"></ul>
+      <div style="display:flex;justify-content:flex-end;margin-top:7px">
+        <button type="button" onclick="clearDone()" style="background:none;border:none;color:#4b5563;font-size:10px;cursor:pointer;font-family:inherit">Clear completed</button>
+      </div>
+    </div>
+
+    <!-- PYQ -->
+    <div class="tool-card">
+      <div class="tool-title">📄 PYQ Practice</div>
+      <div class="pyq-pills" id="pyq-pills"></div>
+      <div class="pyq-box" id="pyq-box">Tap a subject pill then load a question to begin practice!</div>
+      <div class="pyq-ans" id="pyq-ans"></div>
+      <div class="pyq-btns">
+        <button class="cbtn" style="background:#6366f1" onclick="loadPYQ()">🎲 Load Question</button>
+        <button class="cbtn" style="background:#374151" onclick="showAns()">💡 Show Answer</button>
+      </div>
+    </div>
+
+    <!-- PDF -->
+    <div class="tool-card">
+      <div class="tool-title">📚 PDF / Notes Reader</div>
+      <input class="inp" type="file" id="pdf-inp" accept="application/pdf" style="padding:8px"/>
+      <div class="pdf-placeholder" id="pdf-ph">📄 Select a PDF file to read it here</div>
+      <iframe id="pdf-viewer" title="PDF Viewer"></iframe>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="tool-card">
+      <div class="tool-title">📊 Study Analytics</div>
+      <div class="a-stats" id="a-stats"></div>
+      <div id="chart-wrap"><canvas id="a-chart"></canvas></div>
+      <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+        <button class="cbtn" style="background:#059669;flex:1;text-align:center" onclick="logSession()">✅ Log Session</button>
+        <button class="cbtn" style="background:#374151;flex:1;text-align:center" onclick="clearAnalytics()">🗑 Clear Data</button>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS & REMINDERS -->
+    <div class="tool-card" id="reminder-card">
+      <div class="tool-title">🔔 Study Reminders</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:10px">Set a daily reminder when it's time to study. Fires even when the app is in the background.</div>
+      <div style="display:flex;gap:9px;align-items:center;margin-bottom:9px;flex-wrap:wrap">
+        <label style="font-size:11px;color:#9ca3af;white-space:nowrap">Morning reminder</label>
+        <input class="inp" type="time" id="rem-morning" value="06:00" style="width:110px"/>
+        <button class="cbtn" style="background:#6366f1" onclick="saveReminder('morning')">Set</button>
+      </div>
+      <div style="display:flex;gap:9px;align-items:center;margin-bottom:9px;flex-wrap:wrap">
+        <label style="font-size:11px;color:#9ca3af;white-space:nowrap">Evening reminder</label>
+        <input class="inp" type="time" id="rem-evening" value="20:00" style="width:110px"/>
+        <button class="cbtn" style="background:#6366f1" onclick="saveReminder('evening')">Set</button>
+      </div>
+      <div id="rem-status" style="font-size:10px;color:#4ade80;min-height:14px"></div>
+      <div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap">
+        <button class="cbtn" style="background:#374151" onclick="testNotif()">🔔 Test Notification</button>
+        <button class="cbtn" style="background:#1f0a0a;border:1px solid #991b1b;color:#ef4444" onclick="cancelReminders()">Cancel All</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bnav">
+  <button class="nb on" id="n0" onclick="go(0)"><div class="nb-dot"></div><div class="nb-ic">🏠</div><div class="nb-lbl">Today</div></button>
+  <button class="nb" id="n1" onclick="go(1)"><div class="nb-dot"></div><div class="nb-ic">📚</div><div class="nb-lbl">Topics</div></button>
+  <button class="nb" id="n2" onclick="go(2)"><div class="nb-dot"></div><div class="nb-ic">🔁</div><div class="nb-lbl">Revisions</div></button>
+  <button class="nb" id="n3" onclick="go(3)"><div class="nb-dot"></div><div class="nb-ic">📊</div><div class="nb-lbl">Progress</div></button>
+  <button class="nb" id="n4" onclick="go(4)"><div class="nb-dot"></div><div class="nb-ic">🗓️</div><div class="nb-lbl">Phases</div></button>
+  <button class="nb" id="n5" onclick="go(5)"><div class="nb-dot"></div><div class="nb-ic">🛠️</div><div class="nb-lbl">Tools</div></button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ═══════════════════════════════════════
+   DATA
+═══════════════════════════════════════ */
+const RD=[1,3,7,14,30,60];
+const SL={1:"Day+1",3:"Day+3",7:"Day+7",14:"Day+14",30:"Day+30",60:"Day+60"};
+const SC={1:"#ef4444",3:"#f97316",7:"#f59e0b",14:"#22c55e",30:"#3b82f6",60:"#8b5cf6"};
+
+const SUBJECTS=[
+  {id:"polity",name:"Polity & Constitution",icon:"⚖️",color:"#f59e0b",phase:1,period:"Apr–Jun 2026",cls:60,
+   topics:["Historical Background & Making of Constitution","Preamble — Keywords & Significance","Union and Its Territory (Art. 1–4)","Citizenship (Art. 5–11)","Fundamental Rights — Overview & Art. 12–13","Right to Equality (Art. 14–18)","Right to Freedom (Art. 19–22)","Right Against Exploitation & Freedom of Religion","Cultural, Educational & Right to Constitutional Remedies","Directive Principles of State Policy (Art. 36–51)","Fundamental Duties (Art. 51A)","Parliament — Structure, Lok Sabha & Rajya Sabha","Parliamentary Procedures — Sessions, Bills, Committees","President — Powers, Functions & Emergency Role","Vice President & Council of Ministers","Prime Minister & Cabinet System","Supreme Court — Structure, Jurisdiction & Powers","High Courts & Subordinate Courts","State Government — Governor, CM & Legislature","Emergency Provisions (Art. 352, 356, 360)","Centre–State Relations (Legislative, Admin, Financial)","Tribunals & Quasi-Judicial Bodies","Election Commission — Powers & Electoral Process","CAG, Attorney General & Finance Commission","UPSC, SPSCs & Other Constitutional Bodies","Statutory Bodies (NHRC, CIC, CBI, etc.)","Local Self Government — 73rd & 74th Amendment","Schedules 1–12 — Key Contents","Important Constitutional Amendments (42nd–101st)","Anti-Defection Law & Coalition Politics"]},
+  {id:"economics",name:"Economics",icon:"📊",color:"#38bdf8",phase:1,period:"Apr–Jun 2026",cls:60,
+   topics:["Basic Concepts — Micro vs Macro, Opportunity Cost","National Income — GDP, GNP, NNP, NDP concepts","Measuring National Income — 3 Methods","Money — Functions, Types & Supply Measures (M0–M4)","Commercial Banking — Functions & Credit Creation","RBI — Structure, Functions & Role","Monetary Policy — Repo, Reverse Repo, CRR, SLR, OMO","Inflation — Types, Causes & Measures (WPI, CPI, GDP Deflator)","Fiscal Policy — Revenue, Expenditure & FRBM Act","Union Budget — Key Terms & Components","Types of Deficits — Fiscal, Revenue, Primary, CAD","Taxation — Direct & Indirect, GST Structure","Balance of Payments — Current & Capital Account","Foreign Trade Policy — WTO, Exports, Imports","Foreign Exchange — Exchange Rate, REER, NDF","Agriculture — Green Revolution, Issues & Reforms","Agriculture — MSP, APMC, PM Kisan, Reforms","Industry — MSME, Industrial Policy, PLI Scheme","Services Sector — IT, Banking, Digital Economy","Poverty — Measurement Methods, SECC, Programmes","Unemployment — Types, Measurement (PLFS, CMIE)","Human Development — HDI, MPI, IHDI","Planning — Five-Year Plans to NITI Aayog","Key Economic Surveys & Budget Themes","Financial Inclusion — Jan Dhan, PM Mudra","Capital Markets — SEBI, Stock Exchange, MFs","Insurance Sector — IRDAI, Types of Insurance","International Institutions — IMF, World Bank, ADB, WEF","Government Flagship Schemes (Health, Education, Housing)","Current Economic Issues — Inflation, Growth, Forex"]},
+  {id:"geography",name:"Geography (Indian + World)",icon:"🗺️",color:"#34d399",phase:1,period:"Apr–Jun 2026",cls:80,
+   topics:["Earth — Origin, Structure & Interior","Plate Tectonics — Concepts, Types of Plates","Earthquakes & Volcanoes","Geomorphology — Rocks, Weathering, Mass Movement","Fluvial Landforms — Erosion & Deposition","Glacial, Aeolian & Coastal Landforms","Atmosphere — Composition, Layers & Insolation","Heat Budget, Temperature & Lapse Rates","Pressure Belts, Winds & Jet Streams","Humidity, Clouds, Precipitation Types","Tropical Cyclones & Temperate Cyclones","World Climate Types (Köppen Classification)","Biomes — Distribution & Characteristics","Oceanography — Currents, Tides, Salinity, ENSO","India — Physical Features (Himalayas, Peninsular, Plains)","India — Drainage Systems (Himalayan & Peninsular rivers)","India — Monsoon Mechanism & Seasons","India — Soils — Types, Distribution, Problems","India — Natural Vegetation & Forest Types","India — Crops — Rabi, Kharif, Zaid Distribution","India — Mineral Resources — Metallic & Non-metallic","India — Energy Resources — Coal, Oil, Gas, Nuclear","India — Renewable Energy — Solar, Wind, Hydro","India — Industries — Iron, Steel, Textile, Software","India — Transport — Roads, Rail, Ports, Air","India — Population — Census, Density, Migration","World — Continents, Oceans & Key Physical Features","World — Climate Regions & Vegetation Zones","World — Political Geography — Important Countries","Map Practice — Rivers, Mountains, Passes, Straits"]},
+  {id:"modernhistory",name:"Modern History",icon:"🏛️",color:"#c084fc",phase:1,period:"Apr–Jun 2026",cls:50,
+   topics:["European Penetration — Portuguese, Dutch, French, British","British Conquest of India — Stages & Methods","British Administrative System — Subsidiary Alliance, Doctrine of Lapse","Economic Impact of British Rule — Drain Theory, Deindustrialisation","Social & Religious Reforms — 1st Wave (pre-1857)","Ram Mohan Roy & Brahmo Samaj","Swami Dayanand & Arya Samaj; Ramakrishna-Vivekananda","Prarthana Samaj, Theosophical Society, Aligarh Movement","Revolt of 1857 — Causes, Course, Consequences","Post-1857 Changes — Crown Rule, Army Reorganisation","Rise of Indian Nationalism — Causes & Early Forms","Indian National Congress — Formation & Early Phase","Moderate Phase (1885–1905) — Methods & Demands","Partition of Bengal (1905) & Swadeshi Movement","Extremist Phase — Bal-Lal-Pal & Their Ideology","Revolutionary Nationalism — Bhagat Singh, Aurobindo","Morley-Minto Reforms 1909","Lucknow Pact 1916 & Home Rule Movement","Gandhian Entry — Champaran, Kheda, Ahmedabad","Rowlatt Act & Jalianwala Bagh Massacre","Non-Cooperation Movement (1920–22)","Swarajists & No-Changers; Simon Commission","Civil Disobedience Movement (1930–34) — Dandi March","Round Table Conferences & Gandhi-Irwin Pact","Government of India Act 1919 & 1935","Individual Satyagraha & WWII Impact","Quit India Movement (1942)","Subhas Chandra Bose & INA","Post-WWII — Naval Mutiny, Wavell Plan, Cabinet Mission","Partition of India, Independence & Integration of States"]},
+  {id:"ancienthistory",name:"Ancient & Medieval History",icon:"🏺",color:"#fb7185",phase:2,period:"Jul–Sep 2026",cls:40,
+   topics:["Prehistoric India — Palaeolithic, Mesolithic, Neolithic","Indus Valley Civilisation — Sites, Features, Decline","Vedic Period — Early Vedic (Rigvedic) Society","Later Vedic Period — Changes in Society & Religion","Jainism — Mahavira, Doctrines, Sects","Buddhism — Buddha, Teachings, Councils, Spread","Mahajanapadas & Rise of Magadha","Mauryan Empire — Chandragupta, Bindusara, Ashoka","Post-Mauryan — Sungas, Satavahanas, Kushanas","Sangam Age — South India, Literature, Society","Gupta Empire — Golden Age, Administration, Culture","Post-Gupta — Harsha, Regional Kingdoms","Pallavas, Chalukyas & Early South Indian Kingdoms","Cholas — Administration, Naval Power, Architecture","Science, Technology & Culture in Ancient India","Early Medieval — Arab Invasions, Rajputs","Delhi Sultanate — Slave, Khilji, Tughlaq Dynasties","Delhi Sultanate — Sayyids, Lodis, Administration","Bhakti Movement — Ramananda, Kabir, Mirabai","Sufi Movement — Orders & Impact","Vijayanagara Empire & Bahmani Kingdom","Mughal Empire — Babur to Akbar","Mughal Empire — Jahangir, Shah Jahan, Aurangzeb","Maratha Empire — Shivaji, Peshwas, Confederacy","Medieval Art, Architecture, Literature & Culture"]},
+  {id:"environment",name:"Environment & Ecology",icon:"🌿",color:"#a3e635",phase:2,period:"Sep–Oct 2026",cls:35,
+   topics:["Ecology Basics — Ecosystem, Biotic/Abiotic Components","Food Chain, Food Web & Energy Flow","Biogeochemical Cycles — Carbon, Nitrogen, Water","Biodiversity — Levels, Hotspots, India's Richness","Threats to Biodiversity — Habitat Loss, Invasive Species","In-situ & Ex-situ Conservation Methods","Protected Areas — National Parks, Sanctuaries, Biosphere Reserves","Wildlife Laws — WPA 1972, Forest Conservation Act","Environmental Pollution — Air, Water, Soil, Noise","Climate Change — Causes, Effects, Feedback Loops","UNFCCC, Kyoto Protocol, Paris Agreement (NDCs)","IPCC Reports — Key Findings","Ozone Layer & Montreal Protocol","Important Environmental Conventions (Ramsar, CITES, CBD, Bonn)","Environmental Laws — EPA 1986, EIA Notification","Sustainable Development Goals (SDGs)","Renewable Energy & Green Economy Concepts"]},
+  {id:"sciencetech",name:"Science & Technology",icon:"🔬",color:"#fb923c",phase:2,period:"Oct–Nov 2026",cls:30,
+   topics:["Space — ISRO Missions, Satellites, Launch Vehicles","Space — International Missions & Collaborations","Defence Technology — Missiles (Agni, Brahmos, etc.), DRDO","Nuclear Technology — Types, Reactors, India's Policy","Biotechnology — GM Crops, CRISPR, Applications","Nanotechnology — Basics, Applications in India","AI, Machine Learning & Big Data Basics","Blockchain, Cryptocurrency & FinTech","Cybersecurity — Threats, IT Act, National Cyber Policy","Renewable Energy Technologies — Solar, Hydrogen","Medical Science — Vaccines, Genomics, Drug Discovery","Recent Science Discoveries (CA-linked)"]},
+  {id:"artculture",name:"Art & Culture",icon:"🎭",color:"#22d3ee",phase:2,period:"Nov–Dec 2026",cls:25,
+   topics:["Temple Architecture — Nagara, Vesara, Dravidian Styles","Cave Architecture — Ajanta, Ellora, Elephanta","Mughal & Indo-Islamic Architecture","Sculpture Traditions — Gandhara, Mathura, Amaravati","Painting — Ajanta, Mughal, Rajput, Pahari, Modern","Classical Dance Forms (Bharatanatyam, Kathak, etc.)","Classical Music — Hindustani & Carnatic Traditions","Folk Arts, Crafts & Textile Traditions","Sanskrit Literature & Regional Literary Traditions","Fairs, Festivals & Rituals of India","UNESCO Heritage Sites & Intangible Heritage of India"]},
+];
+
+const PHASES=[
+  {id:1,emoji:"🏗️",label:"Phase 1",title:"Foundation Layer",period:"April → June 2026",color:"#f59e0b",subs:["polity","economics","geography","modernhistory"],extra:["Current Affairs — Daily (start from Day 1)","PYQ practice topic-wise every weekend"]},
+  {id:2,emoji:"✍️",label:"Phase 2",title:"Depth + Answer Writing + Optional",period:"July → December 2026",color:"#c084fc",subs:["ancienthistory","environment","sciencetech","artculture"],extra:["Geography Optional — systematic subject-wise","Answer Writing — 2 answers/day from July","GS Mains Paper structure introduction","Current Affairs — daily + monthly magazines"]},
+  {id:3,emoji:"🔥",label:"Phase 3",title:"Prelims Revision Sprint",period:"January → March 2027",color:"#ef4444",subs:[],extra:["All 8 subjects — full revision cycle","Daily mocks — 50 Qs timed","Current Affairs last 12 months rapid review","CSAT Paper 2 — ensure 33% cutoff","Weak topic targeting from mock analysis"]},
+  {id:4,emoji:"🎯",label:"Phase 4",title:"Final Blast",period:"April → May 2027",color:"#f43f5e",subs:[],extra:["Full 100-Q mocks daily","Mock analysis — 1 hr after every test","Flashcard mega-review 200 cards/day","Sleep 7 hrs — non-negotiable","No new content — only revision"]},
+];
+
+const TIPS=[
+  {ic:"📌",tip:"Start with Polity — it forms the backbone of GS Paper 2 and bleeds into every other subject."},
+  {ic:"🧠",tip:"After every class, do a 10-min Blank Page recall. Close everything and write what you remember. The struggle IS the learning."},
+  {ic:"📓",tip:"Cornell notes: Left = questions, Right = notes, Bottom = 3-line summary. Left column becomes your revision tool."},
+  {ic:"🔁",tip:"Spaced repetition is compounding interest for your memory. Every tick here is a deposit in your long-term recall bank."},
+  {ic:"💪",tip:"3 focused hours beat 8 distracted hours every single time. Quality of attention > quantity of hours."},
+  {ic:"⏰",tip:"Your 5:30 AM block is your highest-value window. Cortisol peaks, distractions zero, memory encoding strongest."},
+  {ic:"📰",tip:"Tag every Current Affairs item by subject. Your CA notebook is a revision asset, not just a reading log."},
+  {ic:"📝",tip:"PYQs are UPSC's clearest signal. 30–40% of Prelims are concept-repeats. Do them topic-by-topic after each subject."},
+  {ic:"🗣️",tip:"Feynman method: explain any topic as if teaching a 12-year-old. Every stumble = a gap in understanding."},
+  {ic:"😴",tip:"Sleep is not rest from studying — it IS studying. Hippocampus replays learning during deep sleep. 10:30 PM hard stop."},
+  {ic:"🎯",tip:"Geography Optional: every fact must be anchored to a location. Always study with an atlas open."},
+  {ic:"✍️",tip:"From July, write 2 answers daily. Answer writing is a separate skill from knowledge — start early."},
+];
+
+const PYQ={
+  polity:[
+    {q:"What is the Basic Structure Doctrine? Which case established it?",a:"Holds that Parliament cannot amend Constitution to destroy its 'basic structure'. Established in Kesavananda Bharati v. State of Kerala (1973). Core elements: supremacy of Constitution, republican & democratic form, secular character, separation of powers, judicial review."},
+    {q:"Distinguish between Fundamental Rights and Directive Principles of State Policy.",a:"FRs (Part III): justiciable, individually enforceable, negative (restrain state). DPSPs (Part IV): non-justiciable, not individually enforceable, positive (guide state). Art.37 says DPSPs are fundamental to governance. After Minerva Mills (1980), both are complementary."},
+    {q:"What are the emergency provisions under Articles 352, 356, and 360?",a:"Art.352 (National Emergency): War, external aggression, or armed rebellion. Art.356 (President's Rule): Constitutional machinery failure in state. Art.360 (Financial Emergency): Financial stability threatened. All require Parliamentary approval."},
+    {q:"Explain the Anti-Defection Law (Tenth Schedule).",a:"Added by 52nd Amendment (1985). Disqualification if: (1) voluntarily gives up party membership, (2) votes against party whip. Exception: merger of ≥2/3 members. Decision by Speaker/Chairman — subject to judicial review (Kihoto Hollohan, 1992)."},
+    {q:"What are the qualifications to become President of India?",a:"(1) Indian citizen, (2) Completed 35 years, (3) Qualified for Lok Sabha membership, (4) Must not hold any office of profit. Elected by Electoral College: elected MPs + elected MLAs."},
+  ],
+  economics:[
+    {q:"What is the difference between Repo Rate and Reverse Repo Rate?",a:"Repo Rate: RBI lends to commercial banks (against securities). Reverse Repo Rate: RBI borrows from commercial banks. Repo > Reverse Repo always. Higher repo → costlier borrowing → inflation control. Both are MPC tools."},
+    {q:"Explain GDP, GNP, NNP and NDP.",a:"GDP = Output within country's borders. GNP = GDP + Net Factor Income from Abroad (NFIA). NNP = GNP − Depreciation. NDP = GDP − Depreciation. India uses GDP at constant prices (base year 2011-12)."},
+    {q:"Explain the GST structure in India.",a:"Goods & Services Tax — One Nation One Tax (101st CA, 2016). Dual: CGST+SGST for intra-state; IGST for inter-state. Four slabs: 5%, 12%, 18%, 28%. GST Council: Union FM + State FMs. Threshold: ₹40L goods, ₹20L services."},
+    {q:"What is Fiscal Deficit and its implications?",a:"Fiscal Deficit = Total Expenditure − Total Receipts (ex-borrowings). Shows government borrowing requirement. High FD → crowding out private investment, inflation, rising public debt. FRBM Act 2003 targets FD at 3% of GDP."},
+    {q:"What are types of inflation and how is it measured in India?",a:"Demand-pull, Cost-push, Structural, Stagflation. India measures via: CPI (base 2012, RBI primary tool) and WPI (base 2011-12, producer prices). RBI targets CPI at 4% (±2%)."},
+  ],
+  geography:[
+    {q:"Explain the mechanism of the Indian Monsoon.",a:"SW Monsoon (Jun-Sep): Low pressure over Thar Desert pulls moist air from Arabian Sea and Bay of Bengal. NE Monsoon (Oct-Dec): Winds from NE, affect Tamil Nadu coast. ENSO (El Niño-La Niña) strongly influences monsoon strength."},
+    {q:"What are the major physiographic divisions of India?",a:"(1) Himalayas — Himadri, Himachal, Shivaliks. (2) Northern Plains — Indus, Ganga, Brahmaputra systems. (3) Peninsular Plateau — Deccan, Aravalli, Vindhyas, Satpura. (4) Coastal Plains — Eastern (wider) & Western (narrow). (5) Islands — A&N, Lakshadweep."},
+    {q:"Differentiate between Himalayan and Peninsular Rivers.",a:"Himalayan: Perennial (snow+rain fed), younger, deep V-valleys, high erosion, large catchment (Ganga, Brahmaputra). Peninsular: Mostly seasonal (rain), older, wider valleys, mostly east-flowing (Mahanadi, Krishna, Godavari, Kaveri), some west (Narmada, Tapti)."},
+    {q:"Classify Indian soils and their agricultural significance.",a:"(1) Alluvial — most fertile, Indo-Gangetic plains, wheat/rice/sugarcane. (2) Black/Regur — water-retentive, cotton, Deccan Trap. (3) Red & Yellow — iron-rich, eastern plateau. (4) Laterite — leached, heavy rainfall areas. (5) Arid — sandy, Rajasthan. (6) Forest/Mountain soils — hilly areas."},
+    {q:"What is El Niño and its impact on India?",a:"Warming of central-eastern Pacific off Peru coast, weakens trade winds. Impact: weakens SW Monsoon, causes droughts (1987, 2009). La Niña (opposite): strengthens monsoon, floods. Indian Ocean Dipole (IOD) can partially counteract El Niño's negative impact on India."},
+  ],
+  modernhistory:[
+    {q:"What were the causes and consequences of the Revolt of 1857?",a:"Causes: Political (Doctrine of Lapse), Economic (drain of wealth), Military (Enfield rifle cartridge), Social (interference in customs). Consequences: Company rule ended, Crown took over (1858), Army reorganised, Queen's Proclamation, seeds of nationalism."},
+    {q:"Explain Gandhi's philosophy and methods.",a:"Satyagraha: Truth-force / non-violent resistance. Ahimsa: Non-violence as means AND end. Swaraj: Self-rule (political + individual). Methods: Non-cooperation, Civil Disobedience, Fasts, Hartals. Key movements: Champaran (1917), NCM (1920), CDM (1930), QIM (1942)."},
+    {q:"What was the Dandi March? Explain its significance.",a:"CDM launched Mar 12, 1930. Gandhi marched 241 miles from Sabarmati to Dandi (Gujarat) in 24 days with 78 followers to make salt — defying Salt Laws. Significance: Mass participation, international attention, led to Gandhi-Irwin Pact (1931), symbol of civil disobedience."},
+    {q:"What were the key features of the Government of India Act, 1935?",a:"(1) All-India Federation (never implemented), (2) Provincial Autonomy with elected ministers, (3) Dyarchy at Centre, (4) Federal Court, (5) RBI established, (6) Separate electorates expanded. Basis for India's Constitution — many provisions adopted directly."},
+    {q:"Explain the Quit India Movement (1942).",a:"Launched Aug 8-9, 1942 at Gowalia Tank, Mumbai. Gandhi's call: 'Do or Die'. Leaders arrested immediately. Movement became leaderless — widespread spontaneous action. Several districts paralysed. Showed India was ungovernable; accelerated independence."},
+  ],
+  environment:[
+    {q:"What are biodiversity hotspots? Name India's hotspots.",a:"Hotspot: ≥1500 endemic vascular plant species AND >70% habitat lost. India has 4: (1) Himalayas, (2) Indo-Burma (NE India), (3) Western Ghats & Sri Lanka, (4) Sundaland (Nicobar Islands). India is a mega-diverse country (17 such countries worldwide)."},
+    {q:"Explain the Paris Agreement and India's NDC commitments.",a:"Paris Agreement (COP21, 2015): Limit warming to 1.5°C above pre-industrial. NDCs = voluntary country targets. India's updated NDC (2022): (1) 45% GDP emissions intensity cut by 2030 vs 2005, (2) 50% electricity from non-fossil by 2030, (3) Net Zero by 2070."},
+    {q:"What is the difference between in-situ and ex-situ conservation?",a:"In-situ (on-site): Conservation in natural habitat. National Parks, Wildlife Sanctuaries, Biosphere Reserves, Tiger Reserves, Sacred Groves. Ex-situ (off-site): Outside habitat. Zoos, Botanical Gardens, Seed Banks (Svalbard), Gene Banks, Tissue Culture. Both are complementary."},
+  ],
+  sciencetech:[
+    {q:"What are ISRO's major recent missions?",a:"Chandrayaan-3 (2023): Soft-landed on Moon's south pole — India 1st nation. Aditya-L1 (2023): Sun observation at L1 Lagrange point. Gaganyaan: Human spaceflight mission (crew capsule tested). XPoSat (2024): X-ray polarimetry. OneWeb: Commercial launch services."},
+    {q:"Explain CRISPR-Cas9 and its applications.",a:"Gene-editing tool — Cas9 protein guided by RNA cuts DNA at specific location; gene deleted/modified/inserted. Applications: Sickle cell treatment, cancer therapy, GM crops, diagnostics. India: DBT-funded research; CRISPR-edited mustard trials. Nobel Prize 2020: Doudna & Charpentier."},
+  ],
+  artculture:[
+    {q:"Differentiate between Nagara, Dravidian and Vesara temple styles.",a:"Nagara (North): Curvilinear Shikhara, high plinth, no surrounding wall. Examples: Khajuraho, Konark. Dravidian (South): Gopuram (tallest tower at gateway), Vimana over garbhagriha, large compound wall. Examples: Brihadeeswarar, Meenakshi. Vesara: Hybrid, Chalukyas & Hoysalas."},
+    {q:"Name the 8 classical dance forms of India.",a:"(1) Bharatanatyam — Tamil Nadu, (2) Kathak — North India (Hindu-Muslim synthesis), (3) Kathakali — Kerala (elaborate makeup), (4) Manipuri — Manipur (no vigorous footwork), (5) Kuchipudi — Andhra Pradesh, (6) Odissi — Odisha (tribhanga), (7) Sattriya — Assam, (8) Mohiniyattam — Kerala."},
+  ],
+  ancienthistory:[
+    {q:"Key features of the Indus Valley Civilisation.",a:"Period: 3300–1300 BCE; Harappan peak 2600–1900 BCE. Features: Urban grid planning, Great Bath (Mohenjo-daro), standardised weights, undeciphered script. Sites: Harappa, Mohenjo-daro (Pakistan), Lothal/Dholavira (Gujarat), Rakhigarhi (Haryana). Decline: Climate change + river shifts."},
+    {q:"Explain Ashoka's Dhamma. Why was it unique?",a:"Dhamma: Moral code (not religion) — tolerance, ahimsa, respect for elders, charity, purity of heart. Spread via Rock Edicts & Pillar Edicts (Brahmi script). Sent missionaries: Mahinda & Sanghamitra to Sri Lanka. Unique: First ruler to use state power for ethical governance across Asia. Converted after Kalinga War (261 BCE)."},
+  ],
+};
+
+/* ═══════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════ */
+const todayStr=()=>new Date().toISOString().split("T")[0];
+const addDays=(d,n)=>{const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt.toISOString().split("T")[0]};
+const daysDiff=d=>{const a=new Date();a.setHours(0,0,0,0);const b=new Date(d);b.setHours(0,0,0,0);return Math.round((b-a)/86400000)};
+const fmtDate=d=>new Date(d).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
+const G=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const pbarH=(p,c,h=5)=>`<div style="height:${h}px;border-radius:99px;overflow:hidden;background:#1e2235"><div style="height:100%;width:${p}%;background:${c};border-radius:99px;transition:width .5s ease"></div></div>`;
+const badgeH=(c,t)=>`<span class="badge" style="background:${c}22;color:${c}">${esc(t)}</span>`;
+const tagH=(c,t)=>`<span class="tag" style="background:${c}15;color:${c};border-color:${c}44">${esc(t)}</span>`;
+const cbtnH=(c,t,fn)=>`<button class="cbtn" style="background:${c}" onclick="${fn}">${t}</button>`;
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let D={topicStatus:{},revisionQueue:[],startDate:todayStr()};
+let curTab=0,openSub="polity",revFilt="due",pyqSub="polity",pyqCur=null,chartInst=null;
+let tasks=[];
+
+function loadData(){try{const r=localStorage.getItem("cse_v6");if(r)D=JSON.parse(r)}catch(e){D={topicStatus:{},revisionQueue:[],startDate:todayStr()}}}
+function saveData(){try{localStorage.setItem("cse_v6",JSON.stringify(D));showFlash("Saved ✓")}catch(e){showFlash("Error saving!")}}
+function showFlash(m){const f=G("flash");f.textContent=m;f.style.opacity="1";clearTimeout(window._ft);window._ft=setTimeout(()=>f.style.opacity="0",1800)}
+
+/* ═══════════════════════════════════════
+   COMPUTED
+═══════════════════════════════════════ */
+const Q=()=>(D.revisionQueue||[]).filter(r=>!r.done);
+const overdue=()=>Q().filter(r=>daysDiff(r.dueDate)<0).sort((a,b)=>new Date(a.dueDate)-new Date(b.dueDate));
+const todayRev=()=>Q().filter(r=>daysDiff(r.dueDate)===0);
+const weekRev=()=>Q().filter(r=>daysDiff(r.dueDate)>0&&daysDiff(r.dueDate)<=7).sort((a,b)=>new Date(a.dueDate)-new Date(b.dueDate));
+const allRev=()=>[...overdue(),...todayRev(),...weekRev(),...Q().filter(r=>daysDiff(r.dueDate)>7).sort((a,b)=>new Date(a.dueDate)-new Date(b.dueDate))];
+const totalTopics=SUBJECTS.reduce((a,s)=>a+s.topics.length,0);
+const totalDone=()=>Object.keys(D.topicStatus||{}).length;
+const totalRDone=()=>(D.revisionQueue||[]).filter(r=>r.done).length;
+const pct=()=>Math.round(totalDone()/totalTopics*100);
+
+/* ═══════════════════════════════════════
+   ACTIONS
+═══════════════════════════════════════ */
+function markStudied(subId,idx,name){
+  const id=`${subId}_${idx}`;
+  const sub=SUBJECTS.find(s=>s.id===subId);
+  D.topicStatus[id]={studied:true,studiedDate:todayStr()};
+  D.revisionQueue=[...(D.revisionQueue||[]).filter(r=>r.topicId!==id),...RD.map(d=>({id:`${id}_r${d}`,topicId:id,topicName:name,subjectId:subId,subjectName:sub.name,subjectColor:sub.color,dueDate:addDays(todayStr(),d),stage:d,done:false}))];
+  saveData();renderAll();
+}
+function unmark(subId,idx){
+  const id=`${subId}_${idx}`;
+  delete D.topicStatus[id];
+  D.revisionQueue=(D.revisionQueue||[]).filter(r=>r.topicId!==id);
+  saveData();renderAll();
+}
+function doneRev(revId){
+  D.revisionQueue=(D.revisionQueue||[]).map(r=>r.id===revId?{...r,done:true}:r);
+  saveData();renderAll();
+}
+function clearAll(){
+  if(!confirm("Reset all study progress? Cannot be undone."))return;
+  D={topicStatus:{},revisionQueue:[],startDate:todayStr()};
+  saveData();renderAll();
+}
+
+/* ═══════════════════════════════════════
+   RENDER: HEADER
+═══════════════════════════════════════ */
+function renderHeader(){
+  const n=new Date();
+  G("hdr-day").textContent=n.toLocaleDateString("en-IN",{weekday:"long"});
+  G("hdr-date").textContent=n.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+  const ts=totalDone(),p=pct(),dueN=todayRev().length+overdue().length;
+  G("hdr-prog-txt").textContent=`${ts}/${totalTopics} topics · ${p}%`;
+  G("hdr-pbar").style.width=p+"%";
+  G("s-done").textContent=ts;
+  G("s-due").textContent=dueN;
+  G("s-due").style.color=dueN>0?"#f97316":"#4b5563";
+  G("s-rdone").textContent=totalRDone();
+}
+
+/* ═══════════════════════════════════════
+   RENDER: TODAY
+═══════════════════════════════════════ */
+function renderToday(){
+  const n=new Date();
+  const t=TIPS[n.getDate()%TIPS.length];
+  G("mentor-lbl").textContent=`MENTOR TIP · ${n.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}).toUpperCase()}`;
+  G("mentor-ic").textContent=t.ic;
+  G("mentor-tip").textContent=t.tip;
+
+  // Overdue
+  const ov=overdue();
+  G("overdue-sec").innerHTML=ov.length===0?"":
+    `<div class="rev-overdue">
+      <div style="font-size:12px;font-weight:700;color:#fca5a5;margin-bottom:9px">🚨 Overdue Revisions (${ov.length})</div>
+      ${ov.slice(0,5).map(r=>`
+        <div class="oi">
+          <div class="item-info">
+            <div class="item-name" style="color:#fef2f2">${esc(r.topicName)}</div>
+            <div class="item-meta">${tagH(r.subjectColor||"#888",r.subjectName)}<span style="font-size:9px;color:#f87171">${SL[r.stage]} · was ${fmtDate(r.dueDate)}</span></div>
+          </div>
+          <button class="cbtn" style="background:#dc2626" onclick="doneRev('${r.id}')">Done ✓</button>
+        </div>`).join("")}
+    </div>`;
+
+  // Today
+  const td=todayRev();
+  G("today-sec").innerHTML=
+    `<div class="rev-today" style="background:${td.length>0?"#130f00":"#0f1117"};border:1px solid ${td.length>0?"#78350f":"#1e2235"}">
+      <div style="font-size:12px;font-weight:700;color:${td.length>0?"#fbbf24":"#374151"};margin-bottom:${td.length>0?"9px":"0"}">📅 Today's Revisions (${td.length})</div>
+      ${td.length===0
+        ?`<div style="font-size:11px;color:#374151;margin-top:4px">No revisions today — focus on new content! 🎯</div>`
+        :td.map(r=>`<div class="ti">
+            <div class="item-info">
+              <div class="item-name" style="color:#fef3c7">${esc(r.topicName)}</div>
+              <div class="item-meta">${tagH(r.subjectColor||"#888",r.subjectName)}<span style="font-size:9px;font-weight:700;color:#fbbf24">${SL[r.stage]}</span></div>
+            </div>
+            <button class="cbtn" style="background:#d97706" onclick="doneRev('${r.id}')">Done ✓</button>
+          </div>`).join("")}
+    </div>`;
+
+  // Next
+  const next=SUBJECTS.filter(s=>s.phase===1)
+    .flatMap(s=>s.topics.map((t,i)=>({subId:s.id,subName:s.name,color:s.color,idx:i,name:t})))
+    .filter(t=>!D.topicStatus?.[`${t.subId}_${t.idx}`]?.studied).slice(0,4);
+  G("next-sec").innerHTML=
+    `<div class="next-card">
+      <div style="font-size:12px;font-weight:700;color:#34d399;margin-bottom:9px">➕ Study These Next (Phase 1)</div>
+      ${next.length===0
+        ?`<div style="font-size:11px;color:#065f46">Phase 1 complete! Move to Phase 2 topics. 🎉</div>`
+        :next.map(t=>`<div class="ni">
+            <div class="item-info">
+              <div style="font-size:11px;font-weight:600;color:#ecfdf5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name)}</div>
+              <div style="margin-top:2px">${badgeH(t.color,t.subName)}</div>
+            </div>
+            <button class="cbtn" style="background:#059669;font-size:10px" onclick="go(1);openSub='${t.subId}';renderTopics()">Open →</button>
+          </div>`).join("")}
+    </div>`;
+
+  // Week
+  const wk=weekRev();
+  G("week-sec").innerHTML=wk.length===0?"":
+    `<div class="card">
+      <div style="font-size:12px;font-weight:700;color:#9ca3af;margin-bottom:9px">📆 Coming This Week (${wk.length})</div>
+      ${wk.slice(0,5).map(r=>`
+        <div class="week-row">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:10px;color:#d1d5db;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.topicName)}</div>
+            <div style="font-size:9px;color:#4b5563">${esc(r.subjectName)}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+            <span style="font-size:9px;font-weight:700;color:${SC[r.stage]||"#888"}">${SL[r.stage]}</span>
+            <span style="font-size:9px;color:#6b7280">in ${daysDiff(r.dueDate)}d</span>
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
+
+/* ═══════════════════════════════════════
+   RENDER: TOPICS
+═══════════════════════════════════════ */
+function renderTopics(){
+  const q=(G("s-inp").value||"").trim();
+  G("s-clear").style.display=q?"inline":"none";
+  G("search-res").innerHTML="";
+  G("subj-list").innerHTML="";
+
+  if(q.length>1){
+    const res=SUBJECTS.flatMap(s=>s.topics.map((t,i)=>({subId:s.id,subName:s.name,color:s.color,idx:i,name:t})))
+      .filter(t=>t.name.toLowerCase().includes(q.toLowerCase()));
+    G("search-res").innerHTML=`
+      <div class="card" style="border-color:#2e2f7a;background:#0f1127">
+        <div style="font-size:10px;color:#818cf8;margin-bottom:9px;font-weight:700;letter-spacing:.5px">SEARCH RESULTS (${res.length})</div>
+        ${res.slice(0,10).map(t=>{
+          const studied=!!D.topicStatus?.[`${t.subId}_${t.idx}`]?.studied;
+          return`<div style="display:flex;align-items:center;gap:9px;padding:7px 9px;background:#0a0b14;border-radius:8px;margin-bottom:5px">
+            <button class="topic-cb" style="border-color:${studied?t.color:"#374151"};background:${studied?t.color:"transparent"};flex-shrink:0" onclick="${studied?`unmark('${t.subId}',${t.idx})`:`markStudied('${t.subId}',${t.idx},'${esc(t.name).replace(/'/g,"\\'")}')` }">${studied?`<span style="color:#fff;font-size:9px;font-weight:900">✓</span>`:""}</button>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:11px;color:${studied?"#4b5563":"#e8eaf0"};text-decoration:${studied?"line-through":"none"}">${esc(t.name)}</div>
+              <div style="margin-top:2px">${badgeH(t.color,t.subName)}</div>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>`;
+    return;
+  }
+
+  G("subj-list").innerHTML=SUBJECTS.map(s=>{
+    const done=s.topics.filter((_,i)=>D.topicStatus?.[`${s.id}_${i}`]?.studied).length;
+    const isOpen=openSub===s.id;
+    const sp=Math.round(done/s.topics.length*100);
+    return`<div class="subj-card" style="border-color:${isOpen?s.color+"55":"#1e2235"}">
+      <button class="subj-hdr" style="background:${isOpen?s.color+"0d":"#0f1117"}" onclick="openSub='${isOpen?"":""+s.id}';if('${isOpen}'==='true'){openSub=''}else{openSub='${s.id}'};renderTopics()">
+        <div style="display:flex;align-items:center;gap:9px">
+          <span style="font-size:20px">${s.icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+              <span style="font-size:12px;font-weight:700;color:#e8eaf0">${esc(s.name)}</span>
+              ${badgeH(s.color,"Ph."+s.phase)}
+              <span style="font-size:9px;color:#4b5563">${s.period}</span>
+            </div>
+            <div style="margin-top:7px">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+                <span style="font-size:9px;color:#4b5563">${s.cls} classes · ${s.topics.length} topics</span>
+                <span style="font-size:10px;font-weight:700;color:${s.color}">${done}/${s.topics.length}</span>
+              </div>
+              ${pbarH(sp,s.color,4)}
+            </div>
+          </div>
+          <span style="color:#374151;font-size:12px;flex-shrink:0">${isOpen?"▲":"▼"}</span>
+        </div>
+      </button>
+      ${isOpen?`<div style="background:#08090e">${s.topics.map((topic,i)=>{
+        const id=`${s.id}_${i}`;
+        const st=D.topicStatus?.[id];
+        const studied=!!st?.studied;
+        const pend=(D.revisionQueue||[]).filter(r=>r.topicId===id&&!r.done).length;
+        const safeN=topic.replace(/'/g,"\\'").replace(/"/g,"&quot;");
+        return`<div class="topic-row">
+          <button class="topic-cb" style="border-color:${studied?s.color:"#374151"};background:${studied?s.color:"transparent"}" onclick="${studied?`unmark('${s.id}',${i})`:`markStudied('${s.id}',${i},'${safeN}')`}">${studied?`<span style="color:#fff;font-size:9px;font-weight:900">✓</span>`:""}</button>
+          <div style="flex:1;min-width:0">
+            <div class="topic-name" style="color:${studied?"#4b5563":"#d1d5db"};text-decoration:${studied?"line-through":"none"}">${esc(topic)}</div>
+            ${studied?`<div style="display:flex;gap:7px;margin-top:3px;flex-wrap:wrap"><span style="font-size:9px;color:${s.color}">✓ ${fmtDate(st.studiedDate)}</span>${pend>0?`<span style="font-size:9px;color:#6366f1">· ${pend} rev pending</span>`:""}</div>`:""}
+          </div>
+        </div>`;}).join("")}</div>`:""
+      }
+    </div>`;
+  }).join("");
+}
+
+function clearSearch(){G("s-inp").value="";renderTopics()}
+
+/* ═══════════════════════════════════════
+   RENDER: REVISIONS
+═══════════════════════════════════════ */
+function renderRevisions(){
+  // Legend
+  G("rev-legend").innerHTML=RD.map(d=>`<div class="rev-leg-item"><div class="dot" style="background:${SC[d]}"></div><span style="font-size:9px;color:#6b7280">${SL[d]}</span></div>`).join("");
+
+  // Filters
+  const q=Q(),ov=overdue(),td=todayRev();
+  const filters=[
+    {k:"due",label:`Due/Overdue (${ov.length+td.length})`},
+    {k:"week",label:`This Week (${q.filter(r=>daysDiff(r.dueDate)<=7).length})`},
+    {k:"month",label:`This Month (${q.filter(r=>daysDiff(r.dueDate)<=30).length})`},
+    {k:"all",label:`All (${q.length})`},
+  ];
+  G("rf-wrap").innerHTML=filters.map(f=>
+    `<button class="rf-btn" style="background:${revFilt===f.k?"#4f46e5":"#1a1d2e"};color:${revFilt===f.k?"#fff":"#6b7280"}" onclick="revFilt='${f.k}';renderRevisions()">${esc(f.label)}</button>`
+  ).join("");
+
+  // List
+  const filtered=revFilt==="due"?q.filter(r=>daysDiff(r.dueDate)<=0):revFilt==="week"?q.filter(r=>daysDiff(r.dueDate)<=7):revFilt==="month"?q.filter(r=>daysDiff(r.dueDate)<=30):allRev();
+  const sorted=[...filtered].sort((a,b)=>new Date(a.dueDate)-new Date(b.dueDate));
+
+  if(sorted.length===0){
+    G("rev-list").innerHTML=`<div class="empty"><div class="empty-ic">🎉</div><div class="empty-t">Nothing due for this filter!</div><div class="empty-s">Keep studying to build your revision queue.</div></div>`;
+    return;
+  }
+  G("rev-list").innerHTML=sorted.map(r=>{
+    const diff=daysDiff(r.dueDate);
+    const uc=diff<0?"#ef4444":diff===0?"#f59e0b":diff<=3?"#f97316":"#22c55e";
+    const bg=diff<0?"#130a0a":diff===0?"#130f00":"#0f1117";
+    const br=diff<0?"#7f1d1d":diff===0?"#78350f":"#1e2235";
+    return`<div class="ri" style="background:${bg};border-color:${br}">
+      <div class="item-info">
+        <div class="item-name">${esc(r.topicName)}</div>
+        <div class="item-meta">
+          ${tagH(r.subjectColor||"#888",r.subjectName)}
+          <span style="font-size:9px;font-weight:700;color:${SC[r.stage]||"#888"}">${SL[r.stage]}</span>
+          <span style="font-size:9px;font-weight:600;color:${uc}">${diff<0?Math.abs(diff)+"d overdue":diff===0?"Due today":"In "+diff+"d · "+fmtDate(r.dueDate)}</span>
+        </div>
+      </div>
+      <button class="cbtn" style="background:${uc}" onclick="doneRev('${r.id}')">Done ✓</button>
+    </div>`;
+  }).join("");
+}
+
+/* ═══════════════════════════════════════
+   RENDER: PROGRESS
+═══════════════════════════════════════ */
+function renderProgress(){
+  const ts=totalDone(),p=pct();
+  G("big-pct").textContent=p+"%";
+  G("big-sub").textContent=`${ts} of ${totalTopics} topics studied`;
+  G("subj-prog").innerHTML=SUBJECTS.map(s=>{
+    const done=s.topics.filter((_,i)=>D.topicStatus?.[`${s.id}_${i}`]?.studied).length;
+    const sp=Math.round(done/s.topics.length*100);
+    return`<div class="card" style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
+        <span>${s.icon}</span>
+        <span style="flex:1;font-size:12px;font-weight:600;color:#e8eaf0">${esc(s.name)}</span>
+        <span style="font-size:12px;font-weight:900;color:${s.color}">${sp}%</span>
+      </div>
+      ${pbarH(sp,s.color,5)}
+      <div style="display:flex;justify-content:space-between;margin-top:5px">
+        <span style="font-size:9px;color:#374151">${done}/${s.topics.length} topics · Phase ${s.phase}</span>
+        <span style="font-size:9px;color:#374151">${s.period}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ═══════════════════════════════════════
+   RENDER: PHASES
+═══════════════════════════════════════ */
+function renderPhases(){
+  G("plan-rows").innerHTML=[
+    {period:"Apr–Jun 2026",text:"Polity · Economics · Geography · Modern History",color:"#f59e0b"},
+    {period:"Jul–Dec 2026",text:"Answer Writing · Geography Optional · Remaining Prelims Subjects",color:"#c084fc"},
+    {period:"Jan–Mar 2027",text:"Full Prelims Revision · Daily Mocks · Current Affairs Sprint",color:"#ef4444"},
+    {period:"Apr–May 2027",text:"PRELIMS 2027 FINAL BLAST 🎯",color:"#f43f5e"},
+  ].map(r=>`<div class="plan-row"><div class="plan-dot" style="background:${r.color}"></div><div><div style="font-size:10px;font-weight:700;color:${r.color}">${r.period}</div><div style="font-size:10px;color:#9ca3af">${r.text}</div></div></div>`).join("");
+
+  G("phase-list").innerHTML=PHASES.map(p=>{
+    const ps=SUBJECTS.filter(s=>p.subs.includes(s.id));
+    const phT=ps.reduce((a,s)=>a+s.topics.length,0);
+    const phD=ps.reduce((a,s)=>a+s.topics.filter((_,i)=>D.topicStatus?.[`${s.id}_${i}`]?.studied).length,0);
+    const phP=phT>0?Math.round(phD/phT*100):null;
+    return`<div class="phase-card" style="border:1px solid ${p.color}44">
+      <div class="phase-hdr" style="background:${p.color}12">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <span style="font-size:22px">${p.emoji}</span>
+          ${badgeH(p.color,p.label)}
+          <span style="font-size:10px;color:#4b5563">${p.period}</span>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:${p.color};margin-bottom:${phP!==null?"8px":"0"}">${p.title}</div>
+        ${phP!==null?pbarH(phP,p.color,4)+`<div style="font-size:9px;color:#4b5563;margin-top:4px">${phD}/${phT} topics · ${phP}%</div>`:""}
+      </div>
+      <div class="phase-body">
+        ${ps.map(s=>{const d=s.topics.filter((_,i)=>D.topicStatus?.[`${s.id}_${i}`]?.studied).length;return`<div class="phase-sr"><span style="font-size:14px">${s.icon}</span><span style="flex:1;font-size:11px;color:#9ca3af">${esc(s.name)}</span><span style="font-size:10px;font-weight:700;color:${s.color}">${d}/${s.topics.length}</span></div>`}).join("")}
+        ${(p.extra||[]).map(e=>`<div class="phase-er"><span style="color:${p.color};font-size:11px">▸</span><span style="font-size:10px;color:#6b7280">${esc(e)}</span></div>`).join("")}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ═══════════════════════════════════════
+   RENDER: ALL
+═══════════════════════════════════════ */
+function renderAll(){
+  renderHeader();
+  if(curTab===0)renderToday();
+  else if(curTab===1)renderTopics();
+  else if(curTab===2)renderRevisions();
+  else if(curTab===3)renderProgress();
+  else if(curTab===4)renderPhases();
+  else if(curTab===5){renderTasks();renderPYQPills();renderAnalytics()}
+}
+
+/* ═══════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════ */
+function go(idx){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll(".nb").forEach(b=>b.classList.remove("on"));
+  G("p"+idx).classList.add("on");
+  G("n"+idx).classList.add("on");
+  curTab=idx;
+  renderAll();
+}
+
+/* ═══════════════════════════════════════
+   TOOLS: TIMER
+═══════════════════════════════════════ */
+let tInterval=null,tTotal=25*60,tLeft=25*60,tRunning=false,pomos=0;
+const CIRC=352;
+function setPreset(min,label,btn){
+  resetTimer();
+  document.querySelectorAll(".tp-btn").forEach(b=>b.classList.remove("on"));
+  if(btn)btn.classList.add("on");
+  G("t-mode").textContent=label;
+  G("t-inp").value=min;
+  tTotal=min*60;tLeft=min*60;
+  updateTDisp();
+}
+function updateTDisp(){
+  const m=Math.floor(tLeft/60),s=tLeft%60;
+  G("timer-disp").textContent=m+":"+(s<10?"0"+s:s);
+  const p=tLeft/tTotal,offset=CIRC*(1-p);
+  const fill=G("t-fill");
+  fill.style.strokeDashoffset=offset;
+  const c=p>0.5?"#6366f1":p>0.25?"#f59e0b":"#ef4444";
+  fill.style.stroke=c;
+  G("timer-disp").style.color=c;
+}
+function startTimer(){
+  if(tRunning)return;
+  const v=parseInt(G("t-inp").value);
+  if(v>0){tTotal=v*60;tLeft=v*60}
+  if(tLeft<=0){tLeft=tTotal}
+  tRunning=true;
+  G("t-start").style.display="none";
+  G("t-pause").style.display="inline-block";
+  G("timer-disp").classList.add("t-pulse");
+  tInterval=setInterval(()=>{
+    tLeft--;updateTDisp();
+    if(tLeft<=0){
+      clearInterval(tInterval);tRunning=false;
+      G("timer-disp").classList.remove("t-pulse");
+      G("t-start").style.display="inline-block";G("t-start").textContent="▶ Start";
+      G("t-pause").style.display="none";
+      pomos++;G("pomo-count").textContent=`🍅 ${pomos} session${pomos!==1?"s":""} completed`;
+      if(navigator.vibrate)navigator.vibrate([200,100,200]);
+      const mode=G("t-mode").textContent||"Session";
+      swNotify({type:'NOTIFY_NOW',id:'timer-done',
+        title:`⏰ ${mode} Complete!`,
+        body:`Pomodoro #${pomos} done. Take a break, then keep crushing it 💪`});
+    }
+  },1000);
+}
+function pauseTimer(){
+  if(!tRunning)return;
+  clearInterval(tInterval);tRunning=false;
+  G("timer-disp").classList.remove("t-pulse");
+  G("t-start").textContent="▶ Resume";
+  G("t-start").style.display="inline-block";
+  G("t-pause").style.display="none";
+}
+function resetTimer(){
+  clearInterval(tInterval);tRunning=false;
+  G("timer-disp").classList.remove("t-pulse");
+  G("t-start").textContent="▶ Start";
+  G("t-start").style.display="inline-block";
+  G("t-pause").style.display="none";
+  const v=parseInt(G("t-inp").value);
+  tTotal=(v>0?v:25)*60;tLeft=tTotal;
+  updateTDisp();
+}
+
+/* ═══════════════════════════════════════
+   TOOLS: TASKS
+═══════════════════════════════════════ */
+function loadTasks(){try{tasks=JSON.parse(localStorage.getItem("cse_tasks")||"[]")}catch{tasks=[]}}
+function saveTasks(){try{localStorage.setItem("cse_tasks",JSON.stringify(tasks))}catch{}}
+function renderTasks(){
+  G("task-list").innerHTML=tasks.map((t,i)=>`
+    <li class="task-item">
+      <button class="task-cb ${t.done?"done":""}" onclick="toggleTask(${i})">${t.done?`<span style="color:#fff;font-size:9px;font-weight:900">✓</span>`:""}</button>
+      <span class="task-txt ${t.done?"done":""}">${esc(t.text)}</span>
+      <button class="task-del" onclick="delTask(${i})">×</button>
+    </li>`).join("");
+}
+function addTask(e){
+  if(e)e.preventDefault();
+  const inp=G("t-task");
+  if(!inp)return;
+  const v=(inp.value||'').trim();
+  if(!v)return;
+  tasks.unshift({text:v,done:false,id:Date.now()});
+  inp.value='';
+  inp.focus();
+  saveTasks();
+  renderTasks();
+}
+function toggleTask(i){
+  if(tasks[i])tasks[i].done=!tasks[i].done;
+  saveTasks();renderTasks();
+}
+function delTask(i){
+  tasks.splice(i,1);
+  saveTasks();renderTasks();
+}
+function clearDone(){tasks=tasks.filter(t=>!t.done);saveTasks();renderTasks()}
+
+/* ═══════════════════════════════════════
+   TOOLS: PYQ
+═══════════════════════════════════════ */
+function renderPYQPills(){
+  G("pyq-pills").innerHTML=Object.keys(PYQ).map(sid=>{
+    const s=SUBJECTS.find(x=>x.id===sid)||{name:sid,color:"#6366f1"};
+    const on=pyqSub===sid;
+    return`<button class="pyq-pill" style="background:${on?s.color+"33":"transparent"};color:${on?s.color:s.color+"99"};border-color:${on?s.color:s.color+"44"}" onclick="pyqSub='${sid}';renderPYQPills();loadPYQ()">${esc(s.name.split(" ")[0])}</button>`;
+  }).join("");
+}
+function loadPYQ(){
+  const qs=PYQ[pyqSub]||PYQ.polity;
+  pyqCur=qs[Math.floor(Math.random()*qs.length)];
+  G("pyq-box").textContent=pyqCur.q;
+  G("pyq-ans").style.display="none";
+}
+function showAns(){
+  if(!pyqCur)return;
+  G("pyq-ans").textContent=pyqCur.a;
+  G("pyq-ans").style.display="block";
+}
+
+/* ═══════════════════════════════════════
+   TOOLS: PDF
+═══════════════════════════════════════ */
+G("pdf-inp").addEventListener("change",function(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const url=URL.createObjectURL(file);
+  G("pdf-viewer").src=url;
+  G("pdf-viewer").style.display="block";
+  G("pdf-ph").style.display="none";
+});
+
+/* ═══════════════════════════════════════
+   TOOLS: ANALYTICS
+═══════════════════════════════════════ */
+function getAD(){try{return JSON.parse(localStorage.getItem("cse_anal")||"{}")}catch{return{}}}
+function saveAD(d){try{localStorage.setItem("cse_anal",JSON.stringify(d))}catch{}}
+function logSession(){const d=getAD();d[todayStr()]=(d[todayStr()]||0)+1;saveAD(d);renderAnalytics();showFlash("Session logged! 🎉")}
+function clearAnalytics(){if(!confirm("Clear analytics data?"))return;localStorage.removeItem("cse_anal");renderAnalytics()}
+function calcStreak(d){let s=0,dt=new Date();while(true){const ds=dt.toISOString().split("T")[0];if(d[ds]>0){s++;dt.setDate(dt.getDate()-1)}else break}return s}
+function renderAnalytics(){
+  const d=getAD();
+  const last7=[];
+  for(let i=6;i>=0;i--){const dt=new Date();dt.setDate(dt.getDate()-i);const ds=dt.toISOString().split("T")[0];last7.push({label:dt.toLocaleDateString("en-IN",{weekday:"short"}),val:d[ds]||0})}
+  const tot=Object.values(d).reduce((a,b)=>a+b,0);
+  const tod=d[todayStr()]||0;
+  const str=calcStreak(d);
+  G("a-stats").innerHTML=[{label:"Today",val:tod,color:"#34d399"},{label:"Total Sessions",val:tot,color:"#6366f1"},{label:"Day Streak 🔥",val:str,color:"#f59e0b"}]
+    .map(s=>`<div class="a-stat"><div class="a-stat-v" style="color:${s.color}">${s.val}</div><div class="a-stat-l">${s.label}</div></div>`).join("");
+  if(chartInst){chartInst.destroy();chartInst=null}
+  const ctx=G("a-chart").getContext("2d");
+  chartInst=new Chart(ctx,{type:"bar",data:{labels:last7.map(x=>x.label),datasets:[{label:"Sessions",data:last7.map(x=>x.val),backgroundColor:last7.map(x=>x.val>0?"#6366f1aa":"#1e2235"),borderColor:last7.map(x=>x.val>0?"#6366f1":"#1e2235"),borderWidth:1,borderRadius:6,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:"#6b7280",font:{size:10},precision:0},grid:{color:"#1a1d2e"}},x:{ticks:{color:"#6b7280",font:{size:10}},grid:{display:false}}}}});
+}
+
+/* ═══════════════════════════════════════
+   PWA: INSTALL PROMPT
+═══════════════════════════════════════ */
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();deferredPrompt=e;
+  G("install-bar").classList.add("on");
+});
+G("ib-btn").addEventListener("click",async()=>{
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  const{outcome}=await deferredPrompt.userChoice;
+  deferredPrompt=null;G("install-bar").classList.remove("on");
+  if(outcome==="accepted")showFlash("App installed! 🎉");
+});
+G("ib-close").addEventListener("click",()=>G("install-bar").classList.remove("on"));
+
+/* ═══════════════════════════════════════
+   SERVICE WORKER + NOTIFICATIONS
+   Works in two modes:
+   A) sw.js present → SW handles everything (offline + background notifs)
+   B) sw.js absent  → page-side fallback (Notification API + setTimeout)
+═══════════════════════════════════════ */
+let swReg = null;
+const _pageTimers = new Map(); /* fallback timers when SW not available */
+
+/* ── core notify dispatcher ─────────────────────────────
+   Tries SW first; falls back to page-side implementation  */
+function swNotify(msg){
+  if(swReg && swReg.active){
+    /* SW is running — delegate everything to it */
+    swReg.active.postMessage(msg);
+    return;
+  }
+  /* ── Page-side fallback (no SW) ── */
+  if(!("Notification" in window) || Notification.permission !== "granted") return;
+  const fire = () => {
+    try{ new Notification(msg.title, {body: msg.body, tag: msg.id || "cse", icon: ""}); }
+    catch(e){}
+  };
+  if(msg.type === "NOTIFY_NOW"){
+    fire();
+  } else if(msg.type === "SCHEDULE"){
+    /* cancel any existing timer with same id */
+    if(_pageTimers.has(msg.id)) clearTimeout(_pageTimers.get(msg.id));
+    const tid = setTimeout(()=>{ fire(); _pageTimers.delete(msg.id); }, msg.delay);
+    _pageTimers.set(msg.id, tid);
+  } else if(msg.type === "CANCEL"){
+    if(_pageTimers.has(msg.id)){ clearTimeout(_pageTimers.get(msg.id)); _pageTimers.delete(msg.id); }
+  }
+}
+
+/* ── NOTIFICATION PERMISSION ── */
+async function requestNotifPermission(){
+  if(!("Notification" in window)) return false;
+  if(Notification.permission === "granted") return true;
+  try{ const p = await Notification.requestPermission(); return p === "granted"; }
+  catch(e){ return false; }
+}
+
+/* ── REMINDER HELPERS ── */
+function msUntilTime(hh, mm){
+  const now = new Date(), target = new Date();
+  target.setHours(hh, mm, 0, 0);
+  if(target <= now) target.setDate(target.getDate() + 1); /* push to tomorrow if past */
+  return target - now;
+}
+
+function saveReminder(slot){
+  const inp = G("rem-" + slot);
+  if(!inp) return;
+  const [hh, mm] = (inp.value || "").split(":").map(Number);
+  if(isNaN(hh) || isNaN(mm)){ showFlash("Invalid time"); return; }
+  const prefs = JSON.parse(localStorage.getItem("cse_reminders") || "{}");
+  prefs[slot] = {h: hh, m: mm};
+  localStorage.setItem("cse_reminders", JSON.stringify(prefs));
+  scheduleReminder(slot, hh, mm);
+  const fmt = `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+  const el = G("rem-status");
+  if(el) el.textContent = `✓ ${slot==="morning"?"Morning":"Evening"} reminder set for ${fmt}`;
+  setTimeout(()=>{ const e=G("rem-status"); if(e) e.textContent=""; }, 3000);
+}
+
+function scheduleReminder(slot, hh, mm){
+  const delay = msUntilTime(hh, mm);
+  const msgs = {
+    morning: {title:"🌅 Good Morning, Future IAS Officer!", body:`Time for your morning study session. ${totalDone()} topics done so far — keep going!`},
+    evening: {title:"📚 Evening Study Time!",              body:`Don't skip today's session. ${overdue().length} overdue revisions are waiting.`}
+  };
+  const m = msgs[slot] || {title:"📚 Study Reminder", body:"Time to study for CSE 2027!"};
+  swNotify({type:"SCHEDULE", id:"reminder-"+slot, title:m.title, body:m.body, delay});
+}
+
+function cancelReminders(){
+  swNotify({type:"CANCEL", id:"reminder-morning"});
+  swNotify({type:"CANCEL", id:"reminder-evening"});
+  localStorage.removeItem("cse_reminders");
+  const el = G("rem-status"); if(el) el.textContent = "Reminders cancelled.";
+  showFlash("Reminders cancelled");
+}
+
+function testNotif(){
+  swNotify({type:"NOTIFY_NOW", id:"test",
+    title:"🔔 Test — CSE 2027 Planner",
+    body:"Notifications are working! Reminders will fire even when the app is minimised."});
+}
+
+function restoreReminders(){
+  const prefs = JSON.parse(localStorage.getItem("cse_reminders") || "{}");
+  if(prefs.morning){
+    scheduleReminder("morning", prefs.morning.h, prefs.morning.m);
+    const el = G("rem-morning"); if(el) el.value = `${String(prefs.morning.h).padStart(2,"0")}:${String(prefs.morning.m).padStart(2,"0")}`;
+  }
+  if(prefs.evening){
+    scheduleReminder("evening", prefs.evening.h, prefs.evening.m);
+    const el = G("rem-evening"); if(el) el.value = `${String(prefs.evening.h).padStart(2,"0")}:${String(prefs.evening.m).padStart(2,"0")}`;
+  }
+}
+
+/* ── NOTIFICATION BANNER ── */
+G("nb2-btn").addEventListener("click", async()=>{
+  const granted = await requestNotifPermission();
+  G("notif-bar").classList.remove("on");
+  if(granted){
+    G("reminder-card").classList.add("on");
+    showFlash("Notifications enabled! Set your reminder times in Tools → 🔔");
+    restoreReminders();
+  } else {
+    showFlash("Notification permission denied in browser settings");
+  }
+});
+G("nb2-close").addEventListener("click", ()=>{
+  G("notif-bar").classList.remove("on");
+  localStorage.setItem("cse_notif_dismissed", "1");
+});
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+window.addEventListener("DOMContentLoaded", async ()=>{
+  loadData(); loadTasks();
+  renderAll();
+  updateTDisp();
+  renderPYQPills();
+
+  /* ── Register Service Worker (silent if sw.js not found) ── */
+  if("serviceWorker" in navigator){
+    try{
+      /* Only register if sw.js is actually reachable — avoids 404 console errors */
+      const probe = await fetch("./sw.js", {method:"HEAD"}).catch(()=>null);
+      if(probe && probe.ok){
+        swReg = await navigator.serviceWorker.register("./sw.js");
+      }
+    }catch(_){ /* silent — SW optional */ }
+  }
+
+  /* ── Notification banner ── */
+  if("Notification" in window){
+    if(Notification.permission === "default" && !localStorage.getItem("cse_notif_dismissed")){
+      setTimeout(()=>{ const b=G("notif-bar"); if(b) b.classList.add("on"); }, 2500);
+    }
+    if(Notification.permission === "granted"){
+      const rc = G("reminder-card"); if(rc) rc.classList.add("on");
+      restoreReminders();
+      /* One-per-day overdue alert */
+      const od = overdue();
+      if(od.length > 0 && localStorage.getItem("cse_overdue_alert") !== todayStr()){
+        localStorage.setItem("cse_overdue_alert", todayStr());
+        setTimeout(()=> swNotify({
+          type:"NOTIFY_NOW", id:"overdue-check",
+          title:"⚠️ Overdue Revisions!",
+          body:`You have ${od.length} overdue revision${od.length!==1?"s":""} pending in CSE 2027 Planner.`
+        }), 4000);
+      }
+    }
+  }
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "name": "CSE 2027 — UPSC Planner",
+  "short_name": "CSE 2027",
+  "description": "Personal UPSC CSE preparation tracker for working professionals",
+  "start_url": "./My_buddy.html",
+  "id": "cse2027-upsc",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#08090e",
+  "theme_color": "#08090e",
+  "orientation": "portrait-primary",
+  "lang": "en-IN",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='90' fill='%230f1035'/%3E%3Crect x='130' y='120' width='252' height='300' rx='14' fill='%23312e81'/%3E%3Crect x='130' y='120' width='126' height='300' rx='14' fill='%233730a3'/%3E%3Crect x='248' y='120' width='18' height='300' fill='%236366f1'/%3E%3Crect x='152' y='168' width='78' height='8' rx='4' fill='%23a5b4fc' opacity='.8'/%3E%3Crect x='152' y='192' width='78' height='8' rx='4' fill='%23a5b4fc' opacity='.8'/%3E%3Crect x='152' y='216' width='58' height='8' rx='4' fill='%23a5b4fc' opacity='.6'/%3E%3Crect x='152' y='240' width='68' height='8' rx='4' fill='%23a5b4fc' opacity='.5'/%3E%3Crect x='278' y='168' width='78' height='8' rx='4' fill='%23a5b4fc' opacity='.8'/%3E%3Crect x='278' y='192' width='78' height='8' rx='4' fill='%23a5b4fc' opacity='.8'/%3E%3Crect x='278' y='216' width='58' height='8' rx='4' fill='%23a5b4fc' opacity='.6'/%3E%3Crect x='278' y='240' width='68' height='8' rx='4' fill='%23a5b4fc' opacity='.5'/%3E%3Ctext x='256' y='400' font-size='78' font-weight='900' text-anchor='middle' font-family='Arial Black%2C Arial%2C sans-serif' fill='%23a5b4fc'%3EIAS%3C/text%3E%3Ccircle cx='256' cy='68' r='28' fill='%236366f1'/%3E%3Cpolygon points='256%2C48 262%2C64 280%2C64 266%2C74 271%2C90 256%2C80 241%2C90 246%2C74 232%2C64 250%2C64' fill='%23e0e7ff'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='90' fill='%230f1035'/%3E%3Crect x='130' y='120' width='252' height='300' rx='14' fill='%23312e81'/%3E%3Crect x='130' y='120' width='126' height='300' rx='14' fill='%233730a3'/%3E%3Crect x='248' y='120' width='18' height='300' fill='%236366f1'/%3E%3Crect x='152' y='168' width='78' height='8' rx='4' fill='%23a5b4fc' opacity='.8'/%3E%3Crect x='152' y='192' width='78' height='8' rx='4' fill='%23a5b4fc' opacity='.8'/%3E%3Crect x='152' y='216' width='58' height='8' rx='4' fill='%23a5b4fc' opacity='.6'/%3E%3Crect x='152' y='240' width='68' height='8' rx='4' fill='%23a5b4fc' opacity='.5'/%3E%3Crect x='278' y='168' width='78' height='8' rx='4' fill='%23a5b4fc' opacity='.8'/%3E%3Crect x='278' y='192' width='78' height='8' rx='4' fill='%23a5b4fc' opacity='.8'/%3E%3Crect x='278' y='216' width='58' height='8' rx='4' fill='%23a5b4fc' opacity='.6'/%3E%3Crect x='278' y='240' width='68' height='8' rx='4' fill='%23a5b4fc' opacity='.5'/%3E%3Ctext x='256' y='400' font-size='78' font-weight='900' text-anchor='middle' font-family='Arial Black%2C Arial%2C sans-serif' fill='%23a5b4fc'%3EIAS%3C/text%3E%3Ccircle cx='256' cy='68' r='28' fill='%236366f1'/%3E%3Cpolygon points='256%2C48 262%2C64 280%2C64 266%2C74 271%2C90 256%2C80 241%2C90 246%2C74 232%2C64 250%2C64' fill='%23e0e7ff'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Today's Tasks",
+      "short_name": "Today",
+      "url": "./My_buddy.html#today",
+      "description": "Jump to Today's study plan"
+    },
+    {
+      "name": "Pomodoro Timer",
+      "short_name": "Timer",
+      "url": "./My_buddy.html#tools",
+      "description": "Start a focus session"
+    }
+  ]
+}
